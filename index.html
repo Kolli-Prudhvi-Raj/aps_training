@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Postal Operations Workflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+    --bg: #eef1f7;
+    --bg-accent: radial-gradient(1200px 500px at 10% -10%, rgba(79,110,247,0.10), transparent),
+                  radial-gradient(1000px 500px at 100% 0%, rgba(16,185,129,0.08), transparent);
+    --surface: #ffffff;
+    --surface-2: #f6f8fc;
+    --text: #131b2e;
+    --text-muted: #626e88;
+    --border: #e1e6f0;
+    --shadow: rgba(30, 41, 76, 0.09);
+    --shadow-strong: rgba(30, 41, 76, 0.18);
+    --accent: #4f6ef7;
+    --accent-text: #ffffff;
+
+    --operator: #3b6df0;
+    --operator-bg: #eaf0ff;
+    --operator-text: #2749c9;
+
+    --supervisor: #12b886;
+    --supervisor-bg: #e6faf3;
+    --supervisor-text: #0c8f68;
+
+    --system: #ec9a1e;
+    --system-bg: #fff4e1;
+    --system-text: #b5720b;
+
+    --treasury: #9159f0;
+    --treasury-bg: #f3ecff;
+    --treasury-text: #7233d6;
+
+    color-scheme: light;
+  }
+
+  [data-theme="dark"]{
+    --bg: #0b1020;
+    --bg-accent: radial-gradient(1200px 500px at 10% -10%, rgba(79,110,247,0.16), transparent),
+                  radial-gradient(1000px 500px at 100% 0%, rgba(18,184,134,0.10), transparent);
+    --surface: #131a2c;
+    --surface-2: #171f35;
+    --text: #e8ebf5;
+    --text-muted: #8d96b3;
+    --border: #262f49;
+    --shadow: rgba(0,0,0,0.35);
+    --shadow-strong: rgba(0,0,0,0.55);
+    --accent: #7c93ff;
+    --accent-text: #0b1020;
+
+    --operator: #7c9bff;
+    --operator-bg: rgba(76, 110, 240, 0.16);
+    --operator-text: #a9bcff;
+
+    --supervisor: #35d6a5;
+    --supervisor-bg: rgba(18, 176, 134, 0.14);
+    --supervisor-text: #6fe8c4;
+
+    --system: #f3ae3e;
+    --system-bg: rgba(236, 154, 30, 0.14);
+    --system-text: #f7c169;
+
+    --treasury: #b18bff;
+    --treasury-bg: rgba(145, 89, 240, 0.16);
+    --treasury-text: #c9adff;
+
+    color-scheme: dark;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #0b1020;
+      --bg-accent: radial-gradient(1200px 500px at 10% -10%, rgba(79,110,247,0.16), transparent),
+                    radial-gradient(1000px 500px at 100% 0%, rgba(18,184,134,0.10), transparent);
+      --surface: #131a2c;
+      --surface-2: #171f35;
+      --text: #e8ebf5;
+      --text-muted: #8d96b3;
+      --border: #262f49;
+      --shadow: rgba(0,0,0,0.35);
+      --shadow-strong: rgba(0,0,0,0.55);
+      --accent: #7c93ff;
+      --accent-text: #0b1020;
+
+      --operator: #7c9bff;
+      --operator-bg: rgba(76, 110, 240, 0.16);
+      --operator-text: #a9bcff;
+
+      --supervisor: #35d6a5;
+      --supervisor-bg: rgba(18, 176, 134, 0.14);
+      --supervisor-text: #6fe8c4;
+
+      --system: #f3ae3e;
+      --system-bg: rgba(236, 154, 30, 0.14);
+      --system-text: #f7c169;
+
+      --treasury: #b18bff;
+      --treasury-bg: rgba(145, 89, 240, 0.16);
+      --treasury-text: #c9adff;
+      color-scheme: dark;
+    }
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+  body{
+    font-family: var(--font);
+    background:
+      var(--bg-accent),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    padding: 28px 16px 60px;
+    transition: background-color .35s ease, color .35s ease;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media print{
+    body{ background: white; padding: 0; }
+    .page{ margin:0; padding:0; box-shadow:none; width:100%; }
+    .workflow-section{ page-break-inside: avoid; }
+    .modal, .theme-toggle{ display:none !important; }
+  }
+
+  .page{
+    background: var(--surface);
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 36px clamp(16px, 4vw, 42px) 42px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px var(--shadow);
+    border: 1px solid var(--border);
+    transition: background-color .35s ease, border-color .35s ease;
+  }
+
+  /* ---------- Header ---------- */
+  .top-bar{ display:flex; justify-content:flex-end; margin-bottom: 6px; }
+
+  .theme-toggle{
+    display:flex; align-items:center; gap:8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px 6px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color .25s ease, border-color .25s ease, transform .15s ease;
+  }
+  .theme-toggle:hover{ transform: translateY(-1px); border-color: var(--accent); }
+  .theme-toggle:active{ transform: translateY(0); }
+  .toggle-icon{
+    width: 26px; height: 26px; border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--accent); color: var(--accent-text);
+    font-size: 13px;
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1), background-color .3s ease;
+  }
+  .theme-toggle:hover .toggle-icon{ transform: rotate(20deg); }
+
+  h1{
+    text-align:center; color: var(--text); font-size: clamp(22px, 4vw, 28px);
+    font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px;
+  }
+  h2{
+    text-align:center; color: var(--text-muted); font-size: 14px; font-weight: 500;
+    margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+  }
+  .hint{
+    text-align:center; font-size:12.5px; color: var(--text-muted); margin-bottom: 22px;
+  }
+
+  /* ---------- Legend ---------- */
+  .legend{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:10px;
+    margin-bottom: 26px;
+  }
+  .legend-item{
+    display:flex; align-items:center; gap:7px;
+    font-size:12.5px; font-weight:600; color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 7px 13px 7px 10px;
+    border-radius: 999px;
+  }
+  .legend-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+  /* ---------- Sections ---------- */
+  .workflow-section{
+    margin-bottom: 20px;
+    padding: 20px clamp(12px, 3vw, 22px);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: rise .55s ease forwards;
+    transition: background-color .35s ease, border-color .35s ease;
+  }
+  .workflow-section:nth-of-type(1){ animation-delay: .03s; }
+  .workflow-section:nth-of-type(2){ animation-delay: .09s; }
+  .workflow-section:nth-of-type(3){ animation-delay: .15s; }
+  .workflow-section:nth-of-type(4){ animation-delay: .21s; }
+  .workflow-section:nth-of-type(5){ animation-delay: .27s; }
+  .workflow-section:nth-of-type(6){ animation-delay: .33s; }
+
+  @keyframes rise{ to{ opacity:1; transform:none; } }
+
+  .section-head{ display:flex; align-items:center; gap:10px; margin-bottom: 16px; }
+  .section-num{
+    width: 24px; height: 24px; border-radius: 7px; flex-shrink:0;
+    background: var(--accent); color: var(--accent-text);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 12px; font-weight:800;
+  }
+  .workflow-section.exception .section-num{ background: #e0523a; }
+  h3{ color: var(--text); font-size: 15.5px; font-weight: 700; }
+
+  /* ---------- Flow ---------- */
+  .flow-container{
+    display:flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px 2px;
+  }
+
+  .node{
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-left-width: 5px;
+    border-radius: 10px;
+    padding: 12px 12px;
+    flex: 1 1 150px;
+    min-width: 130px;
+    text-align:center;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap: 5px;
+    box-shadow: 0 2px 6px var(--shadow);
+    cursor: pointer;
+    transition: transform .2s cubic-bezier(.2,.8,.3,1), box-shadow .2s ease, border-color .2s ease, background-color .3s ease;
+  }
+  .node:hover, .node:focus-visible{
+    transform: translateY(-4px) scale(1.015);
+    box-shadow: 0 12px 22px var(--shadow-strong);
+  }
+  .node:active{ transform: translateY(-1px) scale(1.0); }
+  .node:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .node.operator{ border-left-color: var(--operator); background: var(--operator-bg); }
+  .node.supervisor{ border-left-color: var(--supervisor); background: var(--supervisor-bg); }
+  .node.system{ border-left-color: var(--system); background: var(--system-bg); }
+  .node.treasury{ border-left-color: var(--treasury); background: var(--treasury-bg); }
+
+  .node-title{ font-size: 13px; font-weight:700; color: var(--text); line-height:1.3; }
+
+  .role-tag{
+    display:inline-flex; align-items:center; gap:4px;
+    font-size: 9.5px; text-transform:uppercase; letter-spacing:.03em; font-weight:800;
+    padding: 3px 8px; border-radius: 999px;
+  }
+  .node.operator .role-tag{ background: var(--operator); color: #fff; }
+  .node.supervisor .role-tag{ background: var(--supervisor); color: #fff; }
+  .node.system .role-tag{ background: var(--system); color: #fff; }
+  .node.treasury .role-tag{ background: var(--treasury); color: #fff; }
+
+  /* connector / arrow */
+  .arrow-wrap{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    flex: 0 0 auto; width: 40px; position:relative;
+  }
+  .arrow{
+    color: var(--text-muted); font-size: 16px; font-weight:700;
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  .handoff-label{
+    font-size: 8px; font-weight:800; text-transform:uppercase; letter-spacing:.02em;
+    color: var(--text-muted); margin-top: 2px; text-align:center; line-height:1.15;
+    max-width: 60px;
+  }
+  .arrow-wrap.handoff .arrow{ color: var(--accent); }
+  .arrow-wrap.handoff::before{
+    content:"";
+    position:absolute; top:50%; left:50%; transform: translate(-50%,-60%);
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); opacity: .08;
+  }
+
+  @keyframes pulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+  @media (prefers-reduced-motion: reduce){
+    .arrow{ animation:none; }
+    .workflow-section{ animation:none; opacity:1; transform:none; }
+  }
+
+  /* Mobile: stack vertically */
+  @media (max-width: 700px){
+    .flow-container{ flex-direction: column; }
+    .node{ width:100%; flex-basis:auto; }
+    .arrow-wrap{ flex-direction: row; width:100%; height: 30px; gap:8px; justify-content:center; }
+    .arrow{ transform: rotate(90deg); }
+    .handoff-label{ margin-top:0; text-align:left; max-width:none; }
+  }
+
+  /* ---------- Modal ---------- */
+  .modal{
+    display:none; position:fixed; inset:0; z-index:1000;
+    background: rgba(8, 12, 25, 0.6);
+    backdrop-filter: blur(3px);
+    align-items:center; justify-content:center;
+    padding: 20px;
+    animation: fadeIn .2s ease;
+  }
+  @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+
+  .modal-content{
+    background: var(--surface);
+    padding: 30px clamp(18px,4vw,34px) 32px;
+    border-radius: 16px;
+    width: 100%; max-width: 760px;
+    max-height: 85vh; overflow-y:auto;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+    position:relative;
+    text-align:center;
+    border: 1px solid var(--border);
+    animation: pop .25s cubic-bezier(.2,.9,.3,1.2);
+  }
+  @keyframes pop{ from{ opacity:0; transform: scale(.94) translateY(8px); } to{ opacity:1; transform:none; } }
+
+  .close-btn{
+    position:absolute; top:14px; right:16px; font-size:22px; cursor:pointer;
+    color: var(--text-muted); width:30px; height:30px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    transition: color .2s ease, background-color .2s ease, transform .2s ease;
+  }
+  .close-btn:hover{ color:#fff; background:#e0523a; transform: rotate(90deg); }
+
+  .modal-title{ font-size: 19px; color: var(--text); font-weight:800; margin-bottom: 22px; }
+
+  .mini-flow{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap: 10px 6px; }
+  .mini-node{
+    background: var(--surface-2); border: 1.5px solid var(--border);
+    padding: 11px 16px; border-radius: 9px; font-size: 13.5px; font-weight:600;
+    color: var(--text); box-shadow: 0 2px 4px var(--shadow);
+    display:flex; align-items:center; gap:8px;
+  }
+  .mini-node .step-num{
+    width:18px; height:18px; border-radius:50%; background:var(--accent); color:var(--accent-text);
+    font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .mini-arrow{ color: var(--accent); font-weight:bold; font-size:17px; }
+
+  @media (max-width: 600px){
+    .mini-flow{ flex-direction:column; align-items:stretch; }
+    .mini-node{ width:100%; }
+    .mini-arrow{ transform: rotate(90deg); align-self:center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="top-bar">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <span class="toggle-icon" id="toggleIcon">🌙</span>
+      <span id="toggleText">Dark mode</span>
+    </button>
+  </div>
+
+  <h1>Postal Operations Workflow</h1>
+  <h2>End-to-End System Procedures: Setup, Booking, Delivery, Bagging &amp; Treasury</h2>
+  <p class="hint">Click on any card to view the granular step-by-step procedure.</p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--operator);"></div> Operator</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--supervisor);"></div> Supervisor</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--system);"></div> System / Common</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--treasury);"></div> Treasury / Sub Accounts</div>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="workflow-section">
+    <div class="section-head"><div class="section-num">1</div><h3>Office Opening &amp; Counter Setup</h3></div>
+    <div class="flow-container">
+      <div class="node system" onclick="openModal('n1')" tabindex="0"><span class="role-tag">Common</span><div class="node-title">Treasury Day Begin</div></div>
+      <div class="arrow-wrap"><div class="arrow">➔</div></div>
+      <div class="node system" onclick="openModal('n2')" tabindex="0"><span class="role-tag">Common</span><div class="node-title">Counter Creation</div></div>
+      <div class="arrow-wrap handoff"><div class="arrow">➔</div><div class="handoff-label">to Supervisor</div></div>
+      <div class="node supervisor" onclick="openModal('n3')" tabindex="0"><span class="role-tag">Supervisor</span><div class="node-title">Counter Allocation</div></div>
+      <div class="arrow-wrap handoff"><div class="arrow">➔</div><div class="handoff-label">to Operator</div></div>
+      <div class="node operator" onclick="openModal('n4')" tabindex="0"><span class="role-tag">Operator</span><div class="node-title">Shift Begin</div></div>
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="workflow-section">
+    <div class="section-head"><div class="section-num">2</div><h3>Mail &amp; EMO Booking Operations</h3></div>
+    <div class="flow-container">
+      <div class="node operator" onclick="openModal('n5')" tabindex="0"><span class="role-tag">Operator</span><div class="node-title">Mail Booking</div></div>
+      <div class="arrow-wrap"><div class="arrow">➔</div></div>
+      <div class="node operator" onclick="openModal('n6')" tabindex="0"><span class="role-tag">Operator</span><div class="node-title">EMO Booking</div></div>
+      <div class="arrow-wrap"><div class="arrow">➔</div></div>
+      <div class="node operator" onclick="openModal('n7')" tabindex="0"><span class="role-tag">Operator</span><div class="node-title">Article Enquiry / Cancel</div></div>
+      <div class="arrow-wrap handoff"><div class="arrow">➔</div><div class="handoff-label">to Supervisor</div></div>
+      <div class="node supervisor" onclick="openModal('n8')" tabindex="0"><span class="role-tag">Supervisor</span><div class="node-title">Authorizations</div></div>
+    </div>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="workflow-section">
+    <div class="section-head"><div class="section-num">3</div><h3>Delivery Workflow (PDMS)</h3></div>
+    <div class="flow-container">
+      <div class="node system" onclick="openModal('n9')" tabindex="0"><span class="role-tag">Setup</span><div class="node-title">Batch &amp; Beat Prep</div></div>
+      <div class="arrow-wrap handoff"><div class="arrow">➔</div><div class="handoff-label">to Operator</div></div>
+      <div class="node operator" onclick="openModal('n10')" tabindex="0"><span class="role-tag">Operator</span><div class="node-title">Invoice to Beats</div></div>
+      <div class="arrow-wrap"><div class="arrow">➔</div></div>
+      <div class="node operator" onclick="openModal('n11')" tabindex="0"><span class="role-tag">Operator</span><div class="node-title">Delivery &amp; Returns</div></div>
+      <div class="arrow-wrap"><div class="arrow">➔</div></div>
+      <div class="node operator" onclick="openModal('n12')" tabindex="0"><span class="role-tag">Operator</span><div class="node-title">Beat Submit Account</div></div>
+    </div>
+  </div>
+
+  <!-- Section 4 -->
+  <div class="workflow-section">
+    <div class="section-head"><div class="section-num">4</div><h3>Counter End &amp; Bagging Operations</h3></div>
+    <div class="flow-container">
+      <div class="node operator" onclick="openModal('n13')" tabindex="0"><span class="role-tag">Operator</span><div class="node-title">Transfer Cash</div></div>
+      <div class="arrow-wrap"><div class="arrow">➔</div></div>
+      <div class="node operator" onclick="openModal('n14')" tabindex="0"><span class="role-tag">Operator</span><div class="node-title">Submit Account (Op)</div></div>
+      <div class="arrow-wrap handoff"><div class="arrow">➔</div><div class="handoff-label">to Supervisor</div></div>
+      <div class="node supervisor" onclick="openModal('n15')" tabindex="0"><span class="role-tag">Supervisor</span><div class="node-title">Verify Accounts</div></div>
+      <div class="arrow-wrap handoff"><div class="arrow">➔</div><div class="handoff-label">to Assistant</div></div>
+      <div class="node operator" onclick="openModal('n16')" tabindex="0"><span class="role-tag">Assistant</span><div class="node-title">Fetch &amp; Bag Close</div></div>
+    </div>
+  </div>
+
+  <!-- Section 5 -->
+  <div class="workflow-section">
+    <div class="section-head"><div class="section-num">5</div><h3>Treasury Day End &amp; Sub Accounts</h3></div>
+    <div class="flow-container">
+      <div class="node treasury" onclick="openModal('n17')" tabindex="0"><span class="role-tag">Treasury</span><div class="node-title">Excess Cash Mgmt</div></div>
+      <div class="arrow-wrap"><div class="arrow">➔</div></div>
+      <div class="node treasury" onclick="openModal('n18')" tabindex="0"><span class="role-tag">Sub Accounts</span><div class="node-title">SODA &amp; Reports</div></div>
+      <div class="arrow-wrap"><div class="arrow">➔</div></div>
+      <div class="node treasury" onclick="openModal('n19')" tabindex="0"><span class="role-tag">Treasury Supervisor</span><div class="node-title">Treasury Day End</div></div>
+      <div class="arrow-wrap handoff"><div class="arrow">➔</div><div class="handoff-label">to Supervisor</div></div>
+      <div class="node supervisor" onclick="openModal('n20')" tabindex="0"><span class="role-tag">Supervisor</span><div class="node-title">Account Bag Despatch</div></div>
+    </div>
+  </div>
+
+  <!-- Section 6 -->
+  <div class="workflow-section exception">
+    <div class="section-head"><div class="section-num">⚠</div><h3>Exception: Forceable Shift End Troubleshooting</h3></div>
+    <div class="flow-container">
+      <div class="node treasury" onclick="openModal('n21')" tabindex="0"><span class="role-tag">Step 1</span><div class="node-title">Adjust Cash</div></div>
+      <div class="arrow-wrap"><div class="arrow">➔</div></div>
+      <div class="node treasury" onclick="openModal('n22')" tabindex="0"><span class="role-tag">Step 2</span><div class="node-title">Prev Day Treasury End</div></div>
+      <div class="arrow-wrap handoff"><div class="arrow">➔</div><div class="handoff-label">to System</div></div>
+      <div class="node system" onclick="openModal('n23')" tabindex="0"><span class="role-tag">Step 3</span><div class="node-title">Today's Treasury Begin</div></div>
+      <div class="arrow-wrap handoff"><div class="arrow">➔</div><div class="handoff-label">to Supervisor</div></div>
+      <div class="node supervisor" onclick="openModal('n24')" tabindex="0"><span class="role-tag">Step 4</span><div class="node-title">Verify &amp; Force Shift End</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Overlay -->
+<div id="flowModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <h2 id="modalTitle" class="modal-title">Procedure</h2>
+    <div id="modalFlow" class="mini-flow"></div>
+  </div>
+</div>
+
+<script>
+  // ---------- Theme handling ----------
+  (function(){
+    const root = document.documentElement;
+    const btn = document.getElementById('themeToggle');
+    const icon = document.getElementById('toggleIcon');
+    const label = document.getElementById('toggleText');
+
+    function systemPrefersDark(){
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function currentlyDark(){
+      const attr = root.getAttribute('data-theme');
+      if (attr === 'dark') return true;
+      if (attr === 'light') return false;
+      return systemPrefersDark();
+    }
+
+    function render(){
+      const dark = currentlyDark();
+      icon.textContent = dark ? '☀️' : '🌙';
+      label.textContent = dark ? 'Light mode' : 'Dark mode';
+      btn.setAttribute('aria-pressed', String(dark));
+    }
+
+    function applyStored(){
+      let stored = null;
+      try { stored = localStorage.getItem('fpo-theme'); } catch(e) {}
+      if (stored === 'dark' || stored === 'light'){
+        root.setAttribute('data-theme', stored);
+      }
+      render();
+    }
+
+    btn.addEventListener('click', function(){
+      const next = currentlyDark() ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('fpo-theme', next); } catch(e) {}
+      render();
+    });
+
+    applyStored();
+  })();
+
+  // ---------- Procedure data (unchanged terminology) ----------
+  const procedures = {
+    'n1': { title: "Treasury Day Begin", steps: ["Login to Treasury Module", "Select 'Treasury Day Begin'", "Confirm Day Begin Initialization"] },
+    'n2': { title: "Counter Creation", steps: ["Booking Solution", "Counter Operations", "Counter Management", "Create New Environment"] },
+    'n3': { title: "Counter Allocation", steps: ["Booking Solution", "Counter Operations", "Counter Management", "Allocate Counter to Operator"] },
+    'n4': { title: "Shift Begin", steps: ["Booking Solution", "Counter Operations", "Shift Management", "Begin Your Shift"] },
+    'n5': { title: "Mail Booking", steps: ["Booking Solution", "Mail Booking", "Select 'Domestic Mail Booking' or 'Book APS Mail'", "Complete Booking"] },
+    'n6': { title: "EMO Booking", steps: ["Booking Solution", "Money Remittance", "Select 'Domestic MO Booking' or 'APS MO Booking'", "Complete EMO Booking"] },
+    'n7': { title: "Article Enquiry / Cancel", steps: ["Booking Solution", "Counter Operations", "Article Operations", "Select 'Article Enquiry' or 'Article Cancellation' (by Operator)"] },
+    'n8': { title: "Authorizations", steps: ["Booking Solution", "Counter Operations", "Authorizations / Article Operations", "Select 'Article Cancellation Authorization' or 'Insured Article Authorization'"] },
+    'n9': { title: "Batch & Beat Prep", steps: ["Open PDMS", "Batch Creation", "Beat Creation", "Beat-Unit Mapping"] },
+    'n10': { title: "Invoice to Beats", steps: ["Open PDMS", "Select 'Invoicing'", "Verify Insured Articles", "Complete Invoice"] },
+    'n11': { title: "Delivery & Returns", steps: ["Open PDMS", "Select 'Delivery'", "Hand over to units", "Select 'Returns'", "Confirm Returns from units (clear pending)"] },
+    'n12': { title: "Beat Submit Account", steps: ["Postman completes beats", "Submit account for all beats", "PDMS Shift End"] },
+    'n13': { title: "Transfer Cash", steps: ["Booking Solution", "Counter Operations", "Inventory, Cheque & Cash", "Transfer Cash (Operator to Treasury)"] },
+    'n14': { title: "Submit Account (Operator)", steps: ["Booking Solution", "Counter Operations", "Common Submit Accounts", "Generate Account", "Check Status [Refresh]", "Fetch Account [Download PDF]", "Submit Account", "Shift End"] },
+    'n15': { title: "Verify Accounts", steps: ["Booking Solution", "Counter Operations", "Common Submit Accounts Supervisor", "Verify Accounts"] },
+    'n16': { title: "Fetch & Bag Close", steps: ["Bag Management", "Bagging Operation", "Fetch From Counter", "Bag Close at PO (F3)", "Supervisor: Verify Insured under 'Close' > Pendings"] },
+    'n17': { title: "Excess Cash Mgmt (ECB)", steps: ["Sub Accounts", "ECB Management", "Generate ECB", "Input Reason for Excess Cash", "Settle by Remittance or ECB"] },
+    'n18': { title: "SODA & Reports", steps: ["SubAccounts", "Accounts Verification", "Generate Daily Account (SODA)", "Treasury", "Reports", "Accounting and other reports", "Generate TCB & DTR"] },
+    'n19': { title: "Treasury Day End", steps: ["Treasury Module", "Complete all cash settlements", "Perform Treasury Supervisor Account Check", "Execute Treasury Day End"] },
+    'n20': { title: "Account Bag Despatch", steps: ["Insert Insured bag in Parcel Bag & Check 'Include Bag'", "Bag Management", "Bagging Operation", "Bag Despatch (F6)", "Under BO Slip and Bags", "Close Account Bag"] },
+    'n21': { title: "Adjust Cash", steps: ["Sub Accounts", "ECB Management", "Adjust any excess cash via ECB or Remittance"] },
+    'n22': { title: "Prev Day Treasury End", steps: ["Treasury Module", "Perform Treasury Day End for the previous working day"] },
+    'n23': { title: "Today's Treasury Begin", steps: ["Treasury Module", "Perform Treasury Day Begin for today's date"] },
+    'n24': { title: "Verify & Force Shift End", steps: ["Booking Solution", "Supervisor Submit Account and Verification for counters", "Force Shift End the counters", "Ready for today's counter-allocations"] }
+  };
+
+  function openModal(nodeId){
+    const data = procedures[nodeId];
+    if (!data) return;
+
+    document.getElementById('modalTitle').textContent = data.title;
+    const flowContainer = document.getElementById('modalFlow');
+    flowContainer.innerHTML = '';
+
+    data.steps.forEach((step, index) => {
+      const stepDiv = document.createElement('div');
+      stepDiv.className = 'mini-node';
+      const num = document.createElement('span');
+      num.className = 'step-num';
+      num.textContent = String(index + 1);
+      stepDiv.appendChild(num);
+      const text = document.createElement('span');
+      text.textContent = step;
+      stepDiv.appendChild(text);
+      flowContainer.appendChild(stepDiv);
+
+      if (index < data.steps.length - 1){
+        const arrowDiv = document.createElement('div');
+        arrowDiv.className = 'mini-arrow';
+        arrowDiv.innerHTML = '➔';
+        flowContainer.appendChild(arrowDiv);
+      }
+    });
+
+    document.getElementById('flowModal').style.display = 'flex';
+  }
+
+  function closeModal(){
+    document.getElementById('flowModal').style.display = 'none';
+  }
+
+  window.onclick = function(event){
+    const modal = document.getElementById('flowModal');
+    if (event.target == modal){ modal.style.display = 'none'; }
+  };
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Enter' && document.activeElement && document.activeElement.classList.contains('node')){
+      document.activeElement.click();
+    }
+  });
+</script>
+
+</body>
+</html>
